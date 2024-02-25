@@ -1,5 +1,8 @@
 # ifitu
-
+```
+docker build -t fitu .
+docker compose up -d 
+```
 ## Adding funciton
 
 1. add api to the router in init_http.go

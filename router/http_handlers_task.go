@@ -1,23 +1,82 @@
 package router
 
 import (
-	"fmt"
-
+	"encoding/json"
+	// "fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/tonychill/ifitu/lib/utils"
 )
 
-func (r *routerImpl) handleCreateTask(c *fiber.Ctx) error {
-	type something struct {
-	}
+func (r *routerImpl) handleGetTask(c *fiber.Ctx) error {
 
-	some := &something{}
-	if err := utils.DecodeFiberRequest(c, some); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"request_id": reqId,
-			"message":    fmt.Sprintf("Error decoding client's request: %s", err.Error()),
-		})
-	}
+	getTaskURI := "https://api.clickup.com/api/v2/task/86azfarup"
+    request := fiber.Get(getTaskURI)
+    request.Debug()
+
+    // to set headers
+    request.Set("Authorization", "pk_90117669_I71JDAZKKTTHQFJF4V48VRFWRWKDTIM9")
+    request.Set("Content-Type", "application/json")
+
+
+    _, getTaskResponse, err := request.Bytes()
+    if err != nil {
+        panic(err)
+    }
+
+	task:= &Task{}
+
+    jsonErr := json.Unmarshal(getTaskResponse, task)
+    if jsonErr != nil {
+        panic(err)
+    }
+
+	//fmt.Printf("respose from fiber: %d\n%s\n%+v", statusCode, getTaskResponse, err)
+	
+	var customerEmail string;
+
+	for idx := range task.CustomFields {
+
+        if task.CustomFields[idx].Name == "customer_email" {
+            customerEmail = task.CustomFields[idx].Value
+        }
+    }
+
+	getCheckOut := "https://ifitu.fly.dev/checkout"
+    getCheckOutRequest := fiber.Post(getCheckOut)
+    request.Debug()
+
+    _, getCheckOutResponse, err := getCheckOutRequest.Bytes()
+    if err != nil {
+        panic(err)
+    }
+
+	checkout:= &Checkout{}
+
+    jsonErr2 := json.Unmarshal(getCheckOutResponse, checkout)
+    if jsonErr2 != nil {
+        panic(err)
+    }
+
+	utils.Send(customerEmail,"Invoice Pending", "Thanks for your purchase.\nTo proceed with the payment, go to the following link: "+checkout.SessionLink)
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"rules": "test",
+		"customer_email": customerEmail,
+	})
+}
+
+
+func (r *routerImpl) handleCreateTask(c *fiber.Ctx) error {
+	// type something struct {
+	// }
+
+	// some := &something{}
+	// if err := utils.DecodeFiberRequest(c, some); err != nil {
+	// 	return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+	// 		"request_id": reqId,
+	// 		"message":    fmt.Sprintf("Error decoding client's request: %s", err.Error()),
+	// 	})
+	// }
 	// Your code here
 	// return c.Status(fiber.StatusOK).JSON(fiber.Map{
 	// 	"rules": "test",

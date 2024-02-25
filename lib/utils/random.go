@@ -6,7 +6,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"math/rand"
+	"net/smtp"
 	"reflect"
 	"strings"
 	"time"
@@ -19,6 +21,29 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 )
+
+func Send(recipient string, subject string, body string) {
+	from := "relatio.sa@gmail.com"
+	pass := "oqwxyhyyqxfrvmfv"
+	to := recipient
+
+	msg := "From: " + from + "\n" +
+		"To: " + to + "\n" +
+		"Subject: "+ subject +"\n\n" +
+		body
+
+	err := smtp.SendMail("smtp.gmail.com:587",
+		smtp.PlainAuth("", from, pass, "smtp.gmail.com"),
+		from, []string{to}, []byte(msg))
+
+	if err != nil {
+		log.Printf("smtp error: %s", err)
+		return
+	}
+	
+	log.Print("sent, visit http://foobarbazz.mailinator.com")
+}
+
 
 func _Encode(entity interface{}, encodingType EncodingType) (string, error) {
 

@@ -138,7 +138,7 @@ func (r *routerImpl) initHttpServer(ctx context.Context, g *errgroup.Group) erro
 	r.app.Post("/add-payment", r.handleAddPayment)
 	r.app.Post("/checkout", r.handleCheckout)
 	r.app.Post("/webhook/clickup", r.handleCheckout)
-
+	r.app.Get("/task", r.handleGetTask)
 
 	// TODO: Deprecating
 	// r.app.Post("/initiate-flow", r.handleInitiateFlow)
